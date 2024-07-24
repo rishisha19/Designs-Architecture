@@ -1,4 +1,4 @@
-# Decentralized Content Sharing System Desig
+# Decentralized Content Sharing System Design
 
 This solution features an infrastructure which helps curators, content creators, artists and users across the globe to share content which is verified, transparent, secured, rewardable and fast.
 
@@ -39,3 +39,15 @@ This new infrastructure should enable:
 
 ### System Overview
 
+![High Level System Diagram](diagrams/decent_infra_hld.drawio.png)
+
+The System is designed utilizing below patterns & architecure style:
+- Event Driven Architecture
+- Microservices
+- Adapter pattern
+- SOLID principles
+
+The key areas to the architecture are
+
+1. <b>Blockchain Resource(s)</b>: The main attribute to Decentalized Apps( from here on dApp) is keeping transparency of data. Keeping data and transactions onchain utilizing smart contract technology will provide transparency, security, traceability to the system.
+2. 
