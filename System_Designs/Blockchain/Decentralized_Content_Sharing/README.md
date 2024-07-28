@@ -13,7 +13,8 @@ This solution features an infrastructure which helps curators, content creators,
   - [Design Constraints](#Design-constraints)
 - [System Architecture](#system-architecure)
   - [Design Choices](#design-choices)
-  - [Detailed Architecutre and flows](#architecture-details)
+  - [System Flows](#system-flows)
+  - [Challenges and Considerations](#challenges)
 
 ## Overview <a id=overview-anchor></a>
 
@@ -79,14 +80,11 @@ The whole system architecture is divided into 3 important aspects:
 
 ### Design Choices <a id=design-choices></a>
 
-1. <i>Blockchain Network(s)</i>: Selecting the most suitable blockchain for a decentralized infrastructure involves considering factors such as scalability, transaction costs, ecosystem support, and interoperability. Here are a few blockchain platforms that are well-suited for handling decentralized data management, verification, and rewards, along with their pros and cons:
-    | Chain | Pros | Cons |
-    | :---   | :---  |  :--- |
-    | `Ethereum` |  <ul><li>Mature Ecosystem</li><li>Smart Contract Flexibility</li> <li>Interoperability</li></ul>  |  <ul><li>High Gas fee</li> <li>Slower transaction time</li> </ul>  |
-    | `Polygon`   | <ul><li>ower gas fees and faster transactions.</li><li>Smart Contract Flexibility</li> <li>Interoperability</li><li>Scalability</li>   </ul> | <ul><li>Depends on Ethereum Security</li>  </ul> |
-    | `Solana`   | <ul><li>Low Transaction Fees.</li><li>High Performance</li> </ul>  | <ul><li>Depends on Ethereum Security</li>  </ul> |
+1. <i>Blockchain Network(s)</i>:
 
-    Being dynamic in nature, the system can grow to various other chains like, Arbitrum, Optimism, etc.
+    The solution requires custom validators and consensus mechanism to help verify the authenticity of content published by the creators and validated results are also available publicly for transparency.
+
+    Based on the soultion requirement, I would consider <i>**rollups preferably celestia**</i>. Which helps in doing custom validation and cerification off chain and publish the results to L1 chain. Keeping both transparency and authenticity at the core. This helps in achieving scalability, flexibility, security, speed, efficency more quickly and implictly keeping the solution decentralizated and transparent.
 
 2. <i>Data Storage</i>: For building a fully decentralized infrastructure that eliminates the middleman and increases trust, we need to carefully select storage solutions that meet below requirements:
 
@@ -95,6 +93,7 @@ The whole system architecture is divided into 3 important aspects:
     - Verifiability: Data integrity and authenticity should be verifiable.
     - Transparency: Data should be accessible for auditing and verification.
     - Efficiency: Data access and retrieval should be efficient.
+  <br></br>
 
     Given the requirements, a hybrid approach combining multiple decentralized storage technologies is optimal:
 
@@ -111,7 +110,6 @@ The whole system architecture is divided into 3 important aspects:
         - Decentralized: Data is distributed across a network of nodes.
         - Cost-Efficient in the Long Run: One-time payment for permanent storage.
         - Scalability: Designed to handle large-scale data storage needs.
-
 
     Decentralized Storage of User Data and Account Balances:
 
@@ -130,30 +128,137 @@ The whole system architecture is divided into 3 important aspects:
     - Use smart contracts on a blockchain (e.g., Polygon) to manage payments securely.
     - Store transaction metadata on Arweave for permanent, tamper-proof records.
     <br></br>
-    
+
     On-Chain Tracking of All Interactions:
 
     - Record all interactions (data production, verifications, votes, etc.) on the blockchain for complete traceability.
     - Use IPFS to store detailed interaction data, with references (content hashes) stored on the blockchain.
     - Ensure critical interaction records are also stored on Arweave for permanence.
+  <br></br>
 
-### Detail Architecutre and flows <a id=architecture-details></a>
+    Along with this a <i>SQL Database like PostgresSQL</i> can be used, to index on chain data, store event information, store other necessary information to effeciently serve our FE client.
+    <br></br>
 
+3. Verifier Selection and Consensus Mechanism
 
+    <h4>Verifier Selection</h4>
+    Selecting reliable verifiers is crucial for the integrity of your decentralized system. Here are some potential strategies:
 
-1. User Registration:
+    | Strategy | Pros | Cons |
+    | :---   | :---  |  :--- |
+    | **Random Selection**       | Simple to implement, ensures fairness.                    | Potential for selecting low-quality verifiers, susceptible to Sybil attacks. |
+    | **Reputation-Based Selection** | Prioritizes verifiers with good track records, improves system reliability. | Requires a reputation system, susceptible to reputation manipulation. |
+    | **Stake-Based Selection**  | Aligns verifier incentives with system success, resistant to Sybil attacks. | Requires a staking mechanism, potential for wealth concentration.  |
+    | **Hybrid Approach**        | Combines benefits of different methods, enhances system robustness. | Increased complexity.|
 
-   ![User Registration flow](diagrams/user-registration-flow.png)
+    Given the requirements of scalability, fairness, and decentralization, <i><b>a hybrid approach combining random selection and reputation-based selection seems optimal</i></b>. This balances the need for fairness with the desire for quality verifiers.
 
-   - User enters the system, system prompts for wallet connect.
-   - Once user connects with the wallet and the connection is succesful
-   - Our system takes user to a registration journey.
-   - User enters the required details, necessary as per system requirements.
-   - Upon sucessful data collection, system generates a Digital Identity(DID) in the form of a ERC-725 issued with DID and the data hash of what is entered in the system.
-   - Following this, whenever user connects with the wallet to the system, system acknowledges the user with the help of DID and fetch data from data hash.
+   - **Random selection** ensures fairness and prevents centralization.
+   - **Reputation-based** selection improves system reliability by prioritizing experienced verifiers.
 
-  > [!NOTE]  
-  > Use of ERC725 standard, helps creating a soverign identity which help tracks the user onchain. Keeping data offchain and dataHash aalong with DID guarantees authenticity and transparency.
+    <h4>Verifier Validation and Consensus Mechanism</h4>
 
+    Validating verification results and reaching consensus among verifiers is fundamental to the system's integrity. Key mechanisms include:
 
-2. Data 
+    | Strategy | Pros | Cons |
+    | :---   | :---  |  :--- |
+    | **Proof of Work (PoW)**           | Strong security guarantees, resistant to double-spending.  | High energy consumption, centralization risks.                    |
+    | **Proof of Stake (PoS)**          | Lower energy consumption, faster block times.              | Potential for "nothing at stake" problem, vulnerability to centralization. |
+    | **Delegated Proof of Stake (DPoS)** | Faster block times, improved scalability.                  | Potential for centralization, susceptible to attacks.             |
+    | **Practical Byzantine Fault Tolerance (PBFT)** | Fast consensus, high fault tolerance.                         | Limited scalability, requires a fixed number of validators.       |
+
+    To achieve scalability, efficiency, and decentralization, <i><b>a Proof of Stake (PoS) or Delegated Proof of Stake (DPoS) consensus mechanism is preferable</b></i>. These mechanisms offer faster block times and lower energy consumption compared to Proof of Work.
+
+    - **PoS** aligns verifier incentives with system success, promoting system stability.
+    - **DPoS** can offer even faster block times but requires careful monitoring to prevent centralization risks.
+
+### System Flows <a id=system-flows></a>
+
+<h4>User Registration</h4>
+
+- **Key Pair Generation:** Users generate a public-private key pair for secure identification.
+- **Distributed Identity(DID) Registration:** Public keys are registered on a decentralized identity network such as Sovrin.
+- **On-Chain Storage:** A hashed representation of the public key is stored on a shard of the main blockchain.
+- **Off-Chain Profile Storage:** User profile data, excluding sensitive information, is stored off-chain in a distributed storage network in IPFS, with its hash recorded on-chain.
+
+<h4>Content Creation/Data Submission</h4>
+
+- **Content Creation:** Users create content or data and store it in a distributed storage network.
+- **On-Chain Metadata:** A content hash and metadata (e.g., creation time, author) are stored on-chain within a rollup.
+- **Random Shard Assignment:** Content is assigned to a random shard for verification.
+
+<h4>Verification</h4>
+
+- **Random Verifier Selection:** Verifiers from different shards are randomly selected to verify the content.
+- **Off-Chain Verification Results:** Verification results (pass/fail, reasons) are stored off-chain in a distributed storage network.
+- **On-Chain Summary:** A summary of verification results (e.g., number of passes, fails) is stored on-chain within the rollup.
+
+<h4>Voting</h4>
+
+- **Vote Casting:** Users cast votes on verified content.
+- **Off-Chain Tallying:** Votes are tallied off-chain and stored in a distributed database.
+- **On-Chain Voting Summary:** A summary of voting results (like total votes, outcome, etc.) is stored on-chain within the rollup.
+
+<h4>On-Chain Recording and Distribution</h4>
+
+**Rollups**
+
+- Scalability: Rollups handle the majority of transactions off-chain, significantly improving scalability and reducing transaction fees.
+
+**Sharding**
+
+- Decentralization and Performance: Data and processing are distributed across multiple shards, enhancing both decentralization and system performance.
+
+**Distributed Ledger**
+
+- Critical Metadata Storage: The main blockchain acts as a distributed ledger, recording critical metadata and rollup summaries.
+
+**Cross-Shard Communication**
+
+- Coordination Mechanisms: Implement robust cross-shard communication mechanisms to coordinate verification and voting processes.
+
+**Consensus**
+
+- Distributed Consensus Algorithm: Utilize a distributed consensus algorithm, such as Proof-of-Stake (PoS), to ensure agreement among nodes and maintain network integrity.
+
+<h4>Features</h4>
+
+**Distributed Storage**
+
+- IPFS & Arweave Utilization: Use of IPFS and Arweave decentralized storage solution forUser profile,  content and verification results.
+
+**Distributed Verification**
+
+- Shard-Based Verification: Verification tasks are distributed across multiple shards, ensuring no single point of failure.
+
+**Distributed Voting**
+
+- Secure Voting System: Employ a distributed voting system to enhance security and decentralization.
+
+**Sharding**
+
+- Scalability: Partition the blockchain into multiple shards to improve scalability and system performance.
+
+**Consensus**
+
+- Decentralized Integrity: Maintain network integrity using a decentralized consensus algorithm.
+
+### Challenges and Considerations <a id=challenges></a>
+
+**Network Latency**
+
+- Impact on Real-Time Operations: Distributed systems can introduce latency, which may impact real-time operations.
+
+**Data Consistency**
+
+- Complexity: Ensuring data consistency across multiple shards can be complex and requires sophisticated coordination mechanisms.
+
+**Security**
+
+- Robust Measures: Protecting against attacks on distributed systems necessitates robust security measures and continuous monitoring.
+
+**Complexity**
+
+- Operational Overhead: Managing a distributed system involves increased operational complexity and overhead.
+
+By carefully addressing these challenges and leveraging the strengths of rollups and sharding, this architecture can provide a highly decentralized, scalable, and secure platform for a wide range of applications, fostering trust and reliability among users and stakeholders.
